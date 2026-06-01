@@ -1206,7 +1206,10 @@ impl Engine {
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty());
 
-        let mut lines = vec![format!("Current local date: {today}")];
+        let mut lines = vec![
+            format!("Current local date: {today}"),
+            format!("Current model: {routed_model}"),
+        ];
         if auto_model {
             lines.push(format!("Auto model route: {routed_model}"));
         }
