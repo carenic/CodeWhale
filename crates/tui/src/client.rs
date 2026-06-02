@@ -428,8 +428,14 @@ pub(super) fn api_url_with_suffix(base_url: &str, path: &str, path_suffix: Optio
     if path.starts_with("beta/") {
         return format!("{}/{}", unversioned_base_url(base_url), path);
     }
-    if let Some(suffix) = path_suffix {
-        return format!("{}/{}", base_url.trim_end_matches('/'), suffix.trim_start_matches('/'));
+    if path == "chat/completions" {
+        if let Some(suffix) = path_suffix {
+            return format!(
+                "{}/{}",
+                unversioned_base_url(base_url),
+                suffix.trim_start_matches('/')
+            );
+        }
     }
     let mut versioned = versioned_base_url(base_url);
     // The /beta suffix is not a real API version — it is an
@@ -703,7 +709,11 @@ impl DeepSeekClient {
         model: &str,
         target_language: &str,
     ) -> Result<String> {
-        let url = api_url_with_suffix(&self.base_url, "chat/completions", self.path_suffix.as_deref());
+        let url = api_url_with_suffix(
+            &self.base_url,
+            "chat/completions",
+            self.path_suffix.as_deref(),
+        );
         let model = wire_model_for_provider(self.api_provider, model);
         let mut body = serde_json::json!({
             "model": model,
@@ -750,7 +760,7 @@ impl DeepSeekClient {
 
     /// List available models from the provider.
     pub async fn list_models(&self) -> Result<Vec<AvailableModel>> {
-        let url = api_url_with_suffix(&self.base_url, "models", self.path_suffix.as_deref());
+        let url = api_url(&self.base_url, "models");
         let response = self.send_with_retry(|| self.http_client.get(&url)).await?;
 
         let status = response.status();
@@ -892,7 +902,7 @@ impl DeepSeekClient {
         if !should_probe {
             return;
         }
-        let health_url = api_url_with_suffix(&self.base_url, "models", self.path_suffix.as_deref());
+        let health_url = api_url(&self.base_url, "models");
         let probe = self.http_client.get(health_url).send().await;
         match probe {
             Ok(resp) if resp.status().is_success() => {
@@ -1008,7 +1018,7 @@ impl LlmClient for DeepSeekClient {
     }
 
     async fn health_check(&self) -> Result<bool> {
-        let health_url = api_url_with_suffix(&self.base_url, "models", self.path_suffix.as_deref());
+        let health_url = api_url(&self.base_url, "models");
         self.wait_for_rate_limit().await;
         let response = self.http_client.get(health_url).send().await;
         match response {
@@ -1331,7 +1341,7 @@ impl DeepSeekClient {
         suffix: &str,
         max_tokens: u32,
     ) -> anyhow::Result<String> {
-        let url = api_url_with_suffix(&self.base_url, "beta/completions", self.path_suffix.as_deref());
+        let url = api_url_with_suffix(&self.base_url, "beta/completions", None);
         let model = wire_model_for_provider(self.api_provider, model);
         let body = json!({
             "model": model,
@@ -3483,10 +3493,18 @@ mod tests {
     }
 
     #[test]
-    fn api_url_with_suffix_uses_suffix_path() {
+    fn api_url_with_suffix_strips_version_before_chat_suffix() {
         assert_eq!(
             api_url_with_suffix(
                 "https://api.example.com/v1",
+                "chat/completions",
+                Some("/chat/completions")
+            ),
+            "https://api.example.com/chat/completions"
+        );
+        assert_eq!(
+            api_url_with_suffix(
+                "https://api.example.com/beta",
                 "chat/completions",
                 Some("/chat/completions")
             ),
@@ -3503,6 +3521,30 @@ mod tests {
                 Some("chat/completions")
             ),
             "https://api.example.com/chat/completions"
+        );
+    }
+
+    #[test]
+    fn api_url_with_suffix_ignores_suffix_for_models() {
+        assert_eq!(
+            api_url_with_suffix(
+                "https://api.example.com/v1",
+                "models",
+                Some("/chat/completions")
+            ),
+            "https://api.example.com/v1/models"
+        );
+    }
+
+    #[test]
+    fn api_url_with_suffix_ignores_suffix_for_beta_paths() {
+        assert_eq!(
+            api_url_with_suffix(
+                "https://api.example.com/v1",
+                "beta/completions",
+                Some("/chat/completions")
+            ),
+            "https://api.example.com/beta/completions"
         );
     }
 
