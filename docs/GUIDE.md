@@ -181,12 +181,13 @@ The interactive TUI has a few stable regions:
   hints.
 
 The footer status line is configurable. Run `/statusline` to choose which
-footer chips are visible, or set `[tui].status_items` in `config.toml` for a
-stable order. Supported keys currently include `mode`, `model`, `cost`,
-`balance`, `status`, `coherence`, `agents`, `reasoning_replay`,
-`prefix_stability`, `cache`, `context_percent`, `git_branch`,
-`last_tool_elapsed`, `rate_limit`, and `tokens`. Omit `status_items` to keep
-the built-in default order; set it to `[]` to hide configurable chips.
+footer chips are visible, or set `[tui].status_items` in `config.toml` to
+control both selection and order. Supported keys currently include `mode`,
+`model`, `cost`, `balance` (DeepSeek / DeepSeekCN only), `status`, `coherence`,
+`agents`, `reasoning_replay`, `prefix_stability`, `cache`, `context_percent`,
+`git_branch`, `last_tool_elapsed` (placeholder), `rate_limit` (placeholder),
+and `tokens`. Omit `status_items` to keep the built-in default order; set it to
+`[]` to hide configurable chips.
 
 The transcript is the audit trail. When CodeWhale reads files, runs commands,
 or edits code, the action appears there. If a command fails, use the visible

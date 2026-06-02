@@ -432,9 +432,10 @@ osc8_links = true            # emit OSC 8 escapes around URLs (Cmd+click in iTer
 # Ordered footer chips shown in the TUI status line. Omit the key to use the
 # built-in default; set [] to hide all configurable chips. You can also edit
 # this interactively with `/statusline`.
-# Supported keys: mode, model, cost, balance, status, coherence, agents,
+# Supported keys: mode, model, cost, balance (DeepSeek / DeepSeekCN only),
+# status, coherence, agents,
 # reasoning_replay, prefix_stability, cache, context_percent, git_branch,
-# last_tool_elapsed, rate_limit, tokens.
+# last_tool_elapsed (placeholder), rate_limit (placeholder), tokens.
 # status_items = ["mode", "model", "status", "git_branch", "tokens", "cache"]
 # notification_condition = "always" # always | never — overrides [notifications].threshold_secs.
 #                                    "always" = notify on every successful turn (no threshold);
