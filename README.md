@@ -49,14 +49,30 @@ areas:
 | Relay and continuity | `/relay`, fork-state handoff, and rich PlanArtifact context preserve the goal, why it matters, evidence, constraints, blockers, changed files, verification state, and the next action. |
 | Transcript calmness | Dense read/search/list-style tool runs can collapse into expandable groups, while failures, running work, shell commands, writes, diffs, plans, and reviews stay visible. |
 | Runtime sessions and workspaces | Branch work extends session/thread runtime APIs, including workspace-aware thread updates, completed-thread session saves, and safer guards around active turns. Treat this as v0.9-track capability until the release ships. |
+| Sub-agent recovery | Live per-step timeout recovery can preserve checkpoint metadata and let `agent_eval { continue: true }` resume an interrupted child in the same runtime. Cold-restart continuation is still a follow-up; persisted child tasks are not rehydrated yet. |
 | Project context stability | Bounded project-context packs and generated instructions keep large/noisy repositories from turning the first turn into an unbounded filesystem walk. |
 | HarmonyOS / OHOS | The lane carries safe OpenHarmony setup, OHOS platform guards, self-update disablement on OHOS, and target gating for PTY and Starlark execpolicy paths. Full OHOS target builds still require a host with the OpenHarmony native SDK configured. |
 | Nix and Starlark compatibility | Dependency stewardship keeps OHOS builds from pulling incompatible Nix-chain crates through PTY or Starlark paths where those features are gated. |
+| HarnessProfile | The branch carries the typed `HarnessPosture` / `HarnessProfile` config data model and strict schema validation. Provider/model posture selection, prompt/tool/runtime behavior, telemetry, and docs remain follow-up work. |
 | Contributor stewardship | Harvested PRs stay credited, contributor identity mapping is machine-readable, and community gates remain dry-run and human-toned while the branch is reviewed. |
 | WhaleFlow | Typed branch/leaf workflows, deterministic replay, pod-style workflow monitoring, provider/model posture, and evidence-backed profile evolution remain the larger v0.9 workbench goal. |
 
 The current execution map lives in
 [docs/V0_9_0_EXECUTION_MAP.md](docs/V0_9_0_EXECUTION_MAP.md).
+
+## Release Status
+
+The latest published release line is still separate from the v0.9 integration
+branch. v0.9.0 work in this README describes the current integration track, not
+a published release artifact. Release-specific detail belongs in
+[CHANGELOG.md](CHANGELOG.md); this README summarizes the current user-facing
+surface and links to deeper docs.
+
+Release channels can lag each other. Before making release claims, verify the
+intended surface directly: GitHub Releases and checksums, npm `codewhale`,
+Cargo crates, Docker/GHCR images, CNB mirrors, and any legacy Homebrew formula.
+No tag, GitHub Release, npm/Cargo publish, Docker publish, or release artifact
+push should happen without explicit maintainer approval.
 
 ## Quickstart
 
