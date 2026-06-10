@@ -4634,7 +4634,7 @@ mod tests {
 
                     if method == "notifications/initialized" {
                         socket
-                            .write_all(b"HTTP/1.1 202 Accepted\r\nContent-Length: 0\r\n\r\n")
+                            .write_all(b"HTTP/1.1 202 Accepted\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
                             .await
                             .unwrap();
                         return;
@@ -4958,7 +4958,7 @@ mod tests {
                     } else if request.starts_with("POST /messages ") {
                         post_seen.store(true, AtomicOrdering::SeqCst);
                         socket
-                            .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
+                            .write_all(b"HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
                             .await
                             .unwrap();
                     }
@@ -5049,7 +5049,7 @@ mod tests {
                     } else if request.starts_with("POST /messages ") {
                         post_seen.store(true, AtomicOrdering::SeqCst);
                         socket
-                            .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
+                            .write_all(b"HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
                             .await
                             .unwrap();
                     }
@@ -5149,7 +5149,7 @@ mod tests {
                             post_header_seen.store(true, AtomicOrdering::SeqCst);
                         }
                         socket
-                            .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
+                            .write_all(b"HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
                             .await
                             .unwrap();
                     }
@@ -5239,7 +5239,7 @@ mod tests {
                     } else if request.starts_with("POST /messages ") {
                         socket
                             .write_all(
-                                b"HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nContent-Length: 25\r\n\r\n{\"error\":\"missing query\"}",
+                                b"HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: 25\r\n\r\n{\"error\":\"missing query\"}",
                             )
                             .await
                             .unwrap();
@@ -5349,7 +5349,7 @@ mod tests {
                         let count = get_count.fetch_add(1, AtomicOrdering::SeqCst);
                         let session = if count == 0 { "sess-old" } else { "sess-new" };
                         let response = format!(
-                            "HTTP/1.1 200 OK\r\nMcp-Session-Id: {session}\r\nContent-Length: 0\r\n\r\n"
+                            "HTTP/1.1 200 OK\r\nConnection: close\r\nMcp-Session-Id: {session}\r\nContent-Length: 0\r\n\r\n"
                         );
                         write_response(&mut socket, response.as_bytes()).await;
                         return;
@@ -5369,7 +5369,7 @@ mod tests {
                         stale_seen.store(true, AtomicOrdering::SeqCst);
                         write_response(
                             &mut socket,
-                            b"HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\nContent-Length: 27\r\n\r\n{\"error\":\"session expired\"}",
+                            b"HTTP/1.1 404 Not Found\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: 27\r\n\r\n{\"error\":\"session expired\"}",
                         )
                         .await;
                         return;
@@ -5398,7 +5398,7 @@ mod tests {
                         _ => {
                             write_response(
                                 &mut socket,
-                                b"HTTP/1.1 202 Accepted\r\nContent-Length: 0\r\n\r\n",
+                                b"HTTP/1.1 202 Accepted\r\nConnection: close\r\nContent-Length: 0\r\n\r\n",
                             )
                             .await;
                             return;
@@ -5487,7 +5487,7 @@ mod tests {
             assert!(headers.starts_with("POST /messages "));
             socket
                 .write_all(
-                    b"HTTP/1.1 400 Bad Request\r\nContent-Type: application/json\r\nContent-Length: 27\r\n\r\n{\"error\":\"session expired\"}",
+                    b"HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: 27\r\n\r\n{\"error\":\"session expired\"}",
                 )
                 .await
                 .unwrap();
@@ -5616,7 +5616,9 @@ mod tests {
                     }
 
                     socket
-                        .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
+                        .write_all(
+                            b"HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: 0\r\n\r\n",
+                        )
                         .await
                         .unwrap();
 
@@ -5780,7 +5782,7 @@ mod tests {
             );
 
             socket
-                .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
+                .write_all(b"HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
                 .await
                 .unwrap();
         });
@@ -5847,7 +5849,7 @@ mod tests {
             }
 
             socket
-                .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
+                .write_all(b"HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
                 .await
                 .unwrap();
         });

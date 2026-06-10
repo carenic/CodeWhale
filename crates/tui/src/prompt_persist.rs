@@ -57,8 +57,12 @@ struct CacheMetadata {
 /// Creates the directory if it doesn't exist.
 #[allow(dead_code)]
 fn cache_dir() -> Option<PathBuf> {
-    let home = dirs::home_dir()?;
-    let dir = home.join(".codewhale").join("prompt_cache");
+    // Override hook so tests never touch the real ~/.codewhale cache (and
+    // never race each other through it).
+    let dir = match std::env::var_os("CODEWHALE_PROMPT_CACHE_DIR") {
+        Some(dir) if !dir.is_empty() => PathBuf::from(dir),
+        _ => dirs::home_dir()?.join(".codewhale").join("prompt_cache"),
+    };
     if let Err(err) = fs::create_dir_all(&dir) {
         logging::warn(format!("Failed to create prompt cache dir: {err}"));
         return None;
@@ -207,52 +211,77 @@ mod tests {
     use super::*;
     use tempfile::tempdir;
 
+    /// Point the cache at a private tempdir for the duration of `f`.
+    ///
+    /// The env var is process-global, so a mutex serializes these tests;
+    /// without it they all share ~/.codewhale/prompt_cache and the eviction
+    /// test can delete another test's entry mid-flight (and the suite
+    /// pollutes the developer's real cache).
+    fn with_isolated_cache_dir<T>(f: impl FnOnce() -> T) -> T {
+        static ENV_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+        let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        let cache_tmp = tempdir().expect("tempdir");
+        // SAFETY: serialized by ENV_LOCK; only this module reads the var.
+        unsafe { std::env::set_var("CODEWHALE_PROMPT_CACHE_DIR", cache_tmp.path()) };
+        let out = f();
+        unsafe { std::env::remove_var("CODEWHALE_PROMPT_CACHE_DIR") };
+        out
+    }
+
     #[test]
     fn save_and_load_round_trip() {
-        let tmp = tempdir().expect("tempdir");
-        let workspace = tmp.path();
-        let hash = "abc123";
-        let text = "Hello, world!";
+        with_isolated_cache_dir(|| {
+            let tmp = tempdir().expect("tempdir");
+            let workspace = tmp.path();
+            let hash = "abc123";
+            let text = "Hello, world!";
 
-        save_cached_base_section(hash, text, workspace);
-        let loaded = load_cached_base_section(hash, workspace);
-        assert_eq!(loaded.as_deref(), Some(text));
+            save_cached_base_section(hash, text, workspace);
+            let loaded = load_cached_base_section(hash, workspace);
+            assert_eq!(loaded.as_deref(), Some(text));
+        });
     }
 
     #[test]
     fn load_returns_none_for_missing_cache() {
-        let tmp = tempdir().expect("tempdir");
-        assert!(load_cached_base_section("nonexistent", tmp.path()).is_none());
+        with_isolated_cache_dir(|| {
+            let tmp = tempdir().expect("tempdir");
+            assert!(load_cached_base_section("nonexistent", tmp.path()).is_none());
+        });
     }
 
     #[test]
     fn load_returns_none_for_wrong_workspace() {
-        let tmp1 = tempdir().expect("tempdir");
-        let tmp2 = tempdir().expect("tempdir");
-        let hash = "def456";
-        let text = "cached content";
+        with_isolated_cache_dir(|| {
+            let tmp1 = tempdir().expect("tempdir");
+            let tmp2 = tempdir().expect("tempdir");
+            let hash = "def456";
+            let text = "cached content";
 
-        save_cached_base_section(hash, text, tmp1.path());
-        assert!(load_cached_base_section(hash, tmp2.path()).is_none());
+            save_cached_base_section(hash, text, tmp1.path());
+            assert!(load_cached_base_section(hash, tmp2.path()).is_none());
+        });
     }
 
     #[test]
     fn evict_preserves_fresh_entries() {
-        let tmp = tempdir().expect("tempdir");
-        let workspace = tmp.path();
-        let hash = "fresh_entry";
-        let text = "fresh content";
+        with_isolated_cache_dir(|| {
+            let tmp = tempdir().expect("tempdir");
+            let workspace = tmp.path();
+            let hash = "fresh_entry";
+            let text = "fresh content";
 
-        save_cached_base_section(hash, text, workspace);
+            save_cached_base_section(hash, text, workspace);
 
-        // Evict entries older than 3600 seconds (1 hour). Fresh entries
-        // should survive.
-        evict_stale_entries(3600);
+            // Evict entries older than 3600 seconds (1 hour). Fresh entries
+            // should survive.
+            evict_stale_entries(3600);
 
-        // The entry should still be there since it was just saved.
-        assert_eq!(
-            load_cached_base_section(hash, workspace).as_deref(),
-            Some(text)
-        );
+            // The entry should still be there since it was just saved.
+            assert_eq!(
+                load_cached_base_section(hash, workspace).as_deref(),
+                Some(text)
+            );
+        });
     }
 }
