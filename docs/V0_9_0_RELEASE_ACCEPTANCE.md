@@ -70,7 +70,7 @@ config source, result, and follow-up issue or PR.
 
 | Gate | Owner | Ship/defer decision | Evidence |
 | --- | --- | --- | --- |
-| Remote workbench is marked included, experimental, or deferred | remote steward | defer runtime / ship setup docs only | `docs/REMOTE_VM_US.md`, `docs/REMOTE_SETUP_DESIGN.md`, and `docs/TENCENT_LIGHTHOUSE_HK.md` document possible VM/Telegram/Lark setup patterns, but no v0.9 remote workbench runtime is included. |
+| Remote workbench is marked included, experimental, or deferred | remote steward | defer runtime / ship setup docs only | `docs/rfcs/REMOTE_SETUP_DESIGN.md` and `docs/TENCENT_LIGHTHOUSE_HK.md` document possible VM/Telegram/Lark setup patterns, but no v0.9 remote workbench runtime is included. |
 | If included: VM install smoke passes | remote steward | defer | Not applicable while remote workbench runtime is deferred; no v0.9 VM install smoke is required before tagging. |
 | If included: Telegram bridge smoke passes | remote steward | defer | Not applicable while remote workbench runtime is deferred; Telegram bridge docs remain design/setup guidance only. |
 | If deferred: release notes avoid implying remote workbench availability | remote steward | ship | Acceptance matrix and changelog wording must say setup/design docs only, not a shipped remote workbench feature. |
