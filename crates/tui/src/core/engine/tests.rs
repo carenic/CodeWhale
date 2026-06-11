@@ -1799,12 +1799,13 @@ fn runtime_prompt_is_projected_without_persisting_to_session_messages() {
             text: "summary after compaction".to_string(),
             cache_control: None,
         }],
-    }];
+    }]
+    .into();
     let stored = engine.session.messages.clone();
 
     let request_messages = engine.messages_with_turn_metadata();
 
-    assert_eq!(engine.session.messages, stored);
+    assert_eq!(&*engine.session.messages, &*stored);
     assert_eq!(request_messages.len(), stored.len() + 1);
     assert!(
         request_messages
@@ -2488,7 +2489,7 @@ fn messages_with_turn_metadata_preserves_stored_messages_for_prefix_cache() {
     let first_request = engine.messages_with_turn_metadata();
     assert_eq!(
         &first_request[..engine.session.messages.len()],
-        engine.session.messages.as_slice()
+        &engine.session.messages[..]
     );
     assert_eq!(first_request.len(), engine.session.messages.len() + 1);
     assert_eq!(first_request.first(), Some(&first_user));
@@ -2514,7 +2515,7 @@ fn messages_with_turn_metadata_preserves_stored_messages_for_prefix_cache() {
     let second_request = engine.messages_with_turn_metadata();
     assert_eq!(
         &second_request[..engine.session.messages.len()],
-        engine.session.messages.as_slice()
+        &engine.session.messages[..]
     );
     assert_eq!(second_request.len(), engine.session.messages.len() + 1);
     assert_eq!(second_request.first(), Some(&first_user));

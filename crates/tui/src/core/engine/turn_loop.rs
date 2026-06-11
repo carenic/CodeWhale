@@ -153,7 +153,7 @@ impl Engine {
                         // Only update if we got valid messages (never corrupt state)
                         if !result.messages.is_empty() || self.session.messages.is_empty() {
                             let auto_messages_after = result.messages.len();
-                            self.session.messages = result.messages;
+                            self.session.messages = result.messages.into();
                             self.merge_compaction_summary(result.summary_prompt);
                             self.emit_session_updated().await;
                             let removed = auto_messages_before.saturating_sub(auto_messages_after);
@@ -2312,7 +2312,7 @@ impl Engine {
         // messages. This preserves the stable prefix through all stored
         // messages while avoiding strict chat templates that only allow
         // system messages at messages[0].
-        let mut messages = self.session.messages.clone();
+        let mut messages: Vec<Message> = self.session.messages.clone().into();
         messages.push(self.runtime_prompt_message());
         messages
     }
