@@ -391,9 +391,24 @@ mod tests {
                 "tìm,搜,検,搜索,buscar,buscar",
             ),
             (
+                MessageId::ToolFamilyDelegate,
+                "delegate",
+                "ủy,委,委,委,delegar,delegar",
+            ),
+            (
                 MessageId::ToolFamilyVerify,
                 "verify",
                 "xác minh,驗,検,验,verificar,verificar",
+            ),
+            (
+                MessageId::ToolFamilyThink,
+                "think",
+                "suy nghĩ,思,思,思,pensar,pensar",
+            ),
+            (
+                MessageId::ToolFamilyGeneric,
+                "tool",
+                "công cụ,工具,ツール,工具,ferramenta,herramienta",
             ),
         ];
         for locale in [

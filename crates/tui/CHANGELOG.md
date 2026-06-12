@@ -32,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `approval.required` events now include optional `matched_rule` metadata when
   an execution-policy rule caused the prompt. Thanks @greyfreedom for the PR
   and @Ram9199 for the audit-semantics discussion.
+- **Localized tool-family labels (#2901).** Tool activity labels for read,
+  patch, run, find, delegate, fanout, RLM, verify, think, and generic tool
+  work now route through the shipped locale tables. Thanks @gordonlu for the
+  PR.
 
 ### Fixed
 
