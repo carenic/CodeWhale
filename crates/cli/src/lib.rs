@@ -169,6 +169,8 @@ enum Commands {
     Init(TuiPassthroughArgs),
     /// Bootstrap MCP config and/or skills directories.
     Setup(TuiPassthroughArgs),
+    /// Generate a remote CodeWhale agent deploy bundle (cloud + chat bridge).
+    RemoteSetup(RemoteSetupArgs),
     /// Run a non-interactive prompt through the TUI runtime.
     #[command(after_help = "\
 Examples:
@@ -302,6 +304,72 @@ struct RunArgs {
 struct TuiPassthroughArgs {
     #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
     args: Vec<String>,
+}
+
+/// Flags for `codewhale remote-setup`. Forwarded to the TUI binary, which owns
+/// the interactive wizard and bundle generation.
+#[derive(Debug, Args, Clone, Default)]
+struct RemoteSetupArgs {
+    /// Cloud target slug (lighthouse, azure, digitalocean). Skips the prompt.
+    #[arg(long)]
+    cloud: Option<String>,
+    /// Chat bridge slug (feishu, telegram). Skips the prompt.
+    #[arg(long)]
+    bridge: Option<String>,
+    /// Provider slug; validated against the provider registry. Skips the prompt.
+    #[arg(long)]
+    provider: Option<String>,
+    /// Bundle output directory (default `./codewhale-deploy/<cloud>-<bridge>`).
+    #[arg(long, value_name = "DIR")]
+    out: Option<PathBuf>,
+    /// Emit the bundle, do not provision (default).
+    #[arg(long, default_value_t = false)]
+    generate_only: bool,
+    /// Run the cloud CLI to auto-provision (not yet implemented).
+    #[arg(long, default_value_t = false, conflicts_with = "generate_only")]
+    apply: bool,
+    /// Skip the final confirmation gate (CI / non-interactive).
+    #[arg(long, default_value_t = false)]
+    yes: bool,
+    /// Fail instead of prompting if any required value is missing.
+    #[arg(long, default_value_t = false)]
+    non_interactive: bool,
+}
+
+/// Build the forwarded argv for the TUI `remote-setup` subcommand from the
+/// structured CLI flags. Mirrors the named flags exactly so the TUI clap parser
+/// re-derives the same `RemoteSetupArgs`.
+fn remote_setup_tui_args(args: RemoteSetupArgs) -> Vec<String> {
+    let mut forwarded = vec!["remote-setup".to_string()];
+    if let Some(cloud) = args.cloud {
+        forwarded.push("--cloud".to_string());
+        forwarded.push(cloud);
+    }
+    if let Some(bridge) = args.bridge {
+        forwarded.push("--bridge".to_string());
+        forwarded.push(bridge);
+    }
+    if let Some(provider) = args.provider {
+        forwarded.push("--provider".to_string());
+        forwarded.push(provider);
+    }
+    if let Some(out) = args.out {
+        forwarded.push("--out".to_string());
+        forwarded.push(out.to_string_lossy().into_owned());
+    }
+    if args.generate_only {
+        forwarded.push("--generate-only".to_string());
+    }
+    if args.apply {
+        forwarded.push("--apply".to_string());
+    }
+    if args.yes {
+        forwarded.push("--yes".to_string());
+    }
+    if args.non_interactive {
+        forwarded.push("--non-interactive".to_string());
+    }
+    forwarded
 }
 
 #[derive(Debug, Args)]
@@ -574,6 +642,10 @@ fn run() -> Result<()> {
         Some(Commands::Setup(args)) => {
             let resolved_runtime = resolve_runtime_for_dispatch(&mut store, &runtime_overrides);
             delegate_to_tui(&cli, &resolved_runtime, tui_args("setup", args))
+        }
+        Some(Commands::RemoteSetup(args)) => {
+            let resolved_runtime = resolve_runtime_for_dispatch(&mut store, &runtime_overrides);
+            delegate_to_tui(&cli, &resolved_runtime, remote_setup_tui_args(args))
         }
         Some(Commands::Exec(args)) => {
             let resolved_runtime = resolve_runtime_for_dispatch(&mut store, &runtime_overrides);

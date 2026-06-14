@@ -69,6 +69,7 @@ mod prompts;
 mod provider_adapter;
 mod provider_readiness;
 mod purge;
+mod remote_setup;
 pub mod repl;
 mod request_tuning;
 mod resource_telemetry;
@@ -220,6 +221,8 @@ enum Commands {
     Doctor(DoctorArgs),
     /// Bootstrap MCP config and/or skills directories
     Setup(SetupArgs),
+    /// Generate a remote CodeWhale agent deploy bundle (cloud + chat bridge)
+    RemoteSetup(remote_setup::RemoteSetupArgs),
     /// Generate shell completions
     Completions {
         /// Shell to generate completions for
@@ -1110,6 +1113,7 @@ async fn main() -> Result<()> {
                 let workspace = resolve_workspace(&cli);
                 run_setup(&config, &workspace, args)
             }
+            Commands::RemoteSetup(args) => remote_setup::run_remote_setup(args),
             Commands::Completions { shell } => {
                 generate_completions(shell);
                 Ok(())
