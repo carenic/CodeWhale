@@ -28,12 +28,37 @@ notes, and relevant issue/PR comments.
 ## Contributors by time
 
 <details>
-<summary><strong>Forward track — recent v0.9 work (newest)</strong></summary>
+<summary><strong>v0.8.61 — runtime control plane &amp; community closeout</strong></summary>
 
 
+The v0.8.61 release was a community closeout: the runtime control plane, provider
+patches, and TUI fixes landed alongside first-time and returning contributor work.
+
+- **[idling11](https://github.com/idling11)** — DeepInfra provider support with
+  OpenAI-compatible routing and model registry entries (#3235, closes #3231)
 - **[greyfreedom](https://github.com/greyfreedom)** — atomic ask-only
   permission-rule persistence so an execution-policy rule survives the write
   that triggered the prompt (#3233)
+- **[VincentCorleone](https://github.com/VincentCorleone)** — WeChat bridge
+  (`integrations/weixin-bridge`) leveraging Feishu + Tencent OpenClaw (#3206)
+- **[nightt5879](https://github.com/nightt5879)** — whale-accent rename (#3197)
+  and `$skillname` aliases for `/skill` activation (#3241)
+- **[mvanhorn](https://github.com/mvanhorn)** — non-DeepSeek model pricing
+  coverage (#3201)
+- **[cyq1017](https://github.com/cyq1017)** — Telegram polling transport
+  (#3195) and VS Code read-only API documentation (#3013)
+- **[RobertEmprechtinger](https://github.com/RobertEmprechtinger)** — mobile
+  event history (#3220)
+- **[gaord](https://github.com/gaord)** — runtime-API session save (#3199)
+- **[hongchen1993](https://github.com/hongchen1993)** — `DEEPSEEK_BASE_URL` /
+  `MODEL` honored in `exec` (#3221)
+
+</details>
+
+<details>
+<summary><strong>Forward track — recent v0.9 work (newest)</strong></summary>
+
+
 - **[xyuai](https://github.com/xyuai)** — canonical CodeWhale settings path,
   provider persistence, provider picker, logout-scope, and MiMo auth cleanup
   work (#2730, #2714, #2715, #2717, #2718)
